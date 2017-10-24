@@ -88,16 +88,19 @@ static int download_info(void *p,
 			 curl_off_t __attribute__ ((__unused__)) ultotal,
 			 curl_off_t __attribute__ ((__unused__)) ulnow)
 {
+	static curl_off_t dlprev;
 	struct dlprogress *dlp = (struct dlprogress *)p;
 	CURL *curl = dlp->curl;
 	double curtime = 0;
 	curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &curtime);
 
-	if ((curtime - dlp->lastruntime) >= MINIMAL_PROGRESS_INTERVAL) {
+	if ((curtime - dlp->lastruntime) >= MINIMAL_PROGRESS_INTERVAL ||
+		(dlnow == dltotal && dlnow != dlprev && dltotal != 0)) {
 		dlp->lastruntime = curtime;
 		INFO("Received : %" CURL_FORMAT_CURL_OFF_T " / %"
 		     CURL_FORMAT_CURL_OFF_T, dlnow, dltotal);
 	}
+	dlprev = dlnow;
 
 	return 0;
 }
